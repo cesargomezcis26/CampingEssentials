@@ -1,1 +1,47 @@
-
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="A practical camping checklist and field-tested tips for your next night outside.">
+  <title>Campwell — A little preparation. A lot of outside.</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <header class="site-header wrap">
+    <a class="brand" href="#" aria-label="Campwell home"><span class="brand-icon" aria-hidden="true">△</span> campwell<span class="brand-dot">.</span></a>
+    <nav aria-label="Main navigation"><a href="#checklist">The checklist</a><a href="#field-notes">Field notes</a><a class="nav-cta" href="#checklist">Get outside <span aria-hidden="true">↗</span></a></nav>
+  </header>
+  <main>
+    <section class="hero wrap">
+      <div class="hero-copy"><p class="eyebrow"><span></span> LESS GUESSWORK. MORE FRESH AIR.</p><h1>A little preparation.<br>A lot of <em>outside.</em></h1><p class="intro">Good trips start with the essentials. Get your gear together, pick up a few tips, and make yourself at home in the great outdoors.</p><a class="button" href="#checklist">Pack for your next adventure <span aria-hidden="true">↗</span></a><div class="hero-footnote"><span aria-hidden="true">✳</span> Made for first-timers. Handy for old hands.</div></div>
+      <div class="hero-art" role="img" aria-label="Illustration of a tent beneath mountains and a sun in a peaceful pine forest">
+        <svg viewBox="0 0 600 550" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><pattern id="grain" width="6" height="6" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r=".6" fill="#344f3d" opacity=".12"/></pattern></defs><path fill="#e5e9d9" d="M0 0h600v550H0z"/><circle cx="437" cy="125" r="58" fill="#e6ad69"/><path d="m0 320 156-191 91 116 75-102 203 216H0" fill="#9aa995"/><path d="m99 199 57-70 53 67-39-15-18 18-19-16Z" fill="#f1f0df"/><path d="m265 220 57-77 71 76-48-18-20 15-19-20Z" fill="#f1f0df"/><path d="M0 356q154-106 301 2t299-32v224H0" fill="#728b70"/><path d="M0 428q137-110 326-20t274-40v182H0" fill="#405f49"/><g fill="#254837"><path d="m72 215-55 124h30l-40 70h132l-42-70h29Z"/><path d="m532 196-51 126h25l-40 81h138l-43-81h24Z"/><path d="m469 282-35 86h19l-29 57h92l-29-57h17Z"/></g><path d="M0 498q228-70 600-17v69H0Z" fill="#2b4938"/><path d="m136 449 131-166 142 166Z" fill="#e8ac6c"/><path d="m267 283 142 166h90L320 294Z" fill="#c78347"/><path d="m267 321-81 128h160Z" fill="#344a38"/><path d="m267 321 4 128h75Z" fill="#1f352b"/><path d="m136 449-27 21m300-21 30 20m60-20 20 15" stroke="#f2dfba" stroke-width="2"/><path d="M0 0h600v550H0z" fill="url(#grain)"/><g stroke="#f0ebd8" fill="none" stroke-width="2"><path d="m383 94 8-3 8 3m-40-16 7-3 7 3"/></g></svg>
+        <span class="art-tag">YOUR NEXT CHAPTER IS OUT HERE.</span><span class="art-coordinate">45°31′ N &nbsp; 122°40′ W</span>
+      </div>
+    </section>
+    <div class="values-strip"><div class="wrap"><span>Pack thoughtfully.</span><span aria-hidden="true">✳</span><span>Tread lightly.</span><span aria-hidden="true">✳</span><span>Stay curious.</span><span aria-hidden="true">✳</span><span>Leave it better.</span></div></div>
+    <section id="checklist" class="checklist-section wrap">
+      <div class="section-heading"><div><p class="eyebrow">01 / THE PACKING LIST</p><h2>Bring what matters.</h2></div><p>A solid starting point for a weekend at a developed campsite.<br>Adjust for your weather, location, and length of stay.</p></div>
+      <div class="checklist-toolbar"><div class="filters" aria-label="Filter checklist"><button class="filter active" data-filter="all" aria-pressed="true">All essentials</button><button class="filter" data-filter="shelter" aria-pressed="false">Sleep & shelter</button><button class="filter" data-filter="kitchen" aria-pressed="false">Camp kitchen</button><button class="filter" data-filter="personal" aria-pressed="false">Personal gear</button></div><button id="reset" class="reset">Reset list ↺</button></div>
+      <div class="progress-row"><span id="progress-text" aria-live="polite">0 of 18 essentials packed</span><div class="progress-track" role="progressbar" aria-label="Packing progress" aria-valuemin="0" aria-valuemax="18" aria-valuenow="0"><div id="progress-fill"></div></div><span class="save-note">Saved on this device</span></div>
+      <div class="gear-grid">
+        <article class="gear-card" data-category="shelter"><div class="card-top"><span class="category-icon" aria-hidden="true">△</span><span class="card-number">01</span></div><h3>Sleep & shelter</h3><p>Your little home away from home.</p><ul class="gear-list">
+          <li><label><input type="checkbox" data-item="tent"><span>Tent & stakes<small>Practice pitching it before you go</small></span></label></li><li><label><input type="checkbox" data-item="sleeping-bag"><span>Sleeping bag<small>Rated for the overnight temperature</small></span></label></li><li><label><input type="checkbox" data-item="sleeping-pad"><span>Sleeping pad</span></label></li><li><label><input type="checkbox" data-item="pillow"><span>Camp pillow</span></label></li><li><label><input type="checkbox" data-item="groundsheet"><span>Groundsheet or footprint</span></label></li><li><label><input type="checkbox" data-item="headlamp"><span>Headlamp & spare batteries</span></label></li>
+        </ul><div class="card-tip"><span aria-hidden="true">↳</span> A good night’s sleep makes every trail better.</div></article>
+        <article class="gear-card" data-category="kitchen"><div class="card-top"><span class="category-icon" aria-hidden="true">♨</span><span class="card-number">02</span></div><h3>Camp kitchen</h3><p>Everything tastes better out here.</p><ul class="gear-list">
+          <li><label><input type="checkbox" data-item="stove"><span>Camp stove & fuel<small>Use outdoors, away from your tent</small></span></label></li><li><label><input type="checkbox" data-item="water"><span>Drinking water<small>Check the campsite’s water supply</small></span></label></li><li><label><input type="checkbox" data-item="food"><span>Food & trail snacks</span></label></li><li><label><input type="checkbox" data-item="cookware"><span>Pot, utensils & mug</span></label></li><li><label><input type="checkbox" data-item="cooler"><span>Cooler & food storage</span></label></li><li><label><input type="checkbox" data-item="cleanup"><span>Trash bags & cleanup kit</span></label></li>
+        </ul><div class="card-tip"><span aria-hidden="true">↳</span> Plan your meals. Pack a little extra.</div></article>
+        <article class="gear-card" data-category="personal"><div class="card-top"><span class="category-icon" aria-hidden="true">☼</span><span class="card-number">03</span></div><h3>Personal gear</h3><p>A few small things go a long way.</p><ul class="gear-list">
+          <li><label><input type="checkbox" data-item="layers"><span>Warm layers & rain jacket<small>Even summer nights can get chilly</small></span></label></li><li><label><input type="checkbox" data-item="first-aid"><span>First-aid kit & medication<small>Include your personal prescriptions</small></span></label></li><li><label><input type="checkbox" data-item="sun"><span>Sunscreen & insect repellent</span></label></li><li><label><input type="checkbox" data-item="shoes"><span>Sturdy shoes & spare socks</span></label></li><li><label><input type="checkbox" data-item="navigation"><span>Offline map & charged phone</span></label></li><li><label><input type="checkbox" data-item="hygiene"><span>Toiletries & hand sanitizer</span></label></li>
+        </ul><div class="card-tip"><span aria-hidden="true">↳</span> Check the forecast. Then check it again.</div></article>
+      </div>
+      <div class="checklist-note"><span aria-hidden="true">ⓘ</span><p>Going off the beaten path? Backcountry trips need additional planning, navigation, water treatment, and emergency supplies. Check local guidance before heading out.</p></div>
+    </section>
+    <section id="field-notes" class="field-section"><div class="wrap"><div class="section-heading"><div><p class="eyebrow">02 / A LITTLE TRAIL WISDOM</p><h2>Good habits. Great trips.</h2></div><p>You don’t need to know everything.<br>These are a good place to start.</p></div><div class="tips-grid"><article><span class="tip-number">01 — BEFORE YOU GO</span><h3>A little homework pays off.</h3><p>Check weather, campsite reservations, fire restrictions, and local wildlife advice. Tell someone where you’re going and when you’ll be back.</p></article><article><span class="tip-number">02 — AT CAMP</span><h3>Settle in before sunset.</h3><p>Choose a designated, level campsite. Set up your tent while it’s light, keep food in approved storage, and keep cooking away from sleeping areas.</p></article><article><span class="tip-number">03 — WHEN YOU LEAVE</span><h3>Leave only the good memories.</h3><p>Pack out every bit of trash. Respect wildlife and other campers. If fires are permitted, fully extinguish yours with water until the ashes are cold.</p></article></div></div></section>
+    <section class="closing wrap"><span aria-hidden="true">✳</span><p>The best things out here<br>aren’t things.</p><a href="#checklist">Get packed. Get going. ↗</a></section>
+  </main>
+  <footer class="wrap"><a class="brand" href="#">△ campwell.</a><p>A practical guide to a little more outside.</p><span>PACK WELL. CAMP WELL.</span></footer>
+</body>
+</html>
