@@ -10,9 +10,16 @@
   let trip = null;
   let busy = false;
   let email = '';
+  let sessionGeneration = 0;
+  let requestGeneration = 0;
   let client;
   const message = text => { status.textContent = text; };
-  const check = result => { if (result.error) throw result.error; return result.data; };
+  const check = result => {
+    // Never render a response issued for a session that has since signed out.
+    if (requestGeneration !== sessionGeneration) throw new Error('Your session ended. Sign in again.');
+    if (result.error) throw result.error;
+    return result.data;
+  };
   const personal = key => key.startsWith('personal-');
   const valueOf = field => field.type === 'checkbox' ? String(field.checked) : field.value;
   function applyValue(field, value) {
@@ -25,10 +32,13 @@
   async function run(action) {
     if (busy) return;
     busy = true;
+    requestGeneration = sessionGeneration;
     document.querySelectorAll('.shared-panel button').forEach(button => { button.disabled = true; });
     lockFields();
     try { await action(); }
-    catch (error) { message(`Could not complete the request: ${error.message || 'Check your connection and try again.'}`); }
+    catch (error) {
+      if (requestGeneration === sessionGeneration) message(`Could not complete the request: ${error.message || 'Check your connection and try again.'}`);
+    }
     finally {
       busy = false;
       document.querySelectorAll('.shared-panel button').forEach(button => { button.disabled = false; });
@@ -44,6 +54,8 @@
     try { values = JSON.parse(localStorage.getItem('campwell-plan-v1') || '{}') || {}; } catch { /* Defaults still work. */ }
     fields.forEach(field => applyValue(field, Object.hasOwn(values, field.dataset.save) ? values[field.dataset.save] : planDefaults.get(field.dataset.save)));
     $('#shared-trip').hidden = true;
+    $('#active-trip-name').textContent = '';
+    $('#trip-id-label').textContent = '';
     $('#planning-status').textContent = 'Local mode: changes save only in this browser and are not shared with friends.';
     lockFields();
   }
@@ -73,6 +85,10 @@
     $('#planning-status').textContent = 'Shared mode: click Save changes after editing. Your personal checks are private to your account. Only the organizer can edit trip details.';
     lockFields();
     message('Shared trip loaded. No unsaved changes.');
+  }
+  if (!window.isSecureContext) {
+    message('Shared sign-in requires HTTPS. For local development, use localhost. Local planning is still available.');
+    return;
   }
   if (!config?.publishableKey) {
     message('Shared mode is not configured yet. Complete supabase/README.md; local planning below still works.');
@@ -150,7 +166,7 @@
     run(async () => {
       const inviteEmail = $('#invite-email').value.trim().toLowerCase();
       const result = await client.from('campwell_invitations').insert({ trip_id: trip.id, email: inviteEmail });
-      if (result.error?.code !== '23505') check(result);
+      check(result.error?.code === '23505' ? { data: null, error: null } : result);
       message('Email allowed. Share the page and trip ID privately with your friend; no invitation email was sent.');
       $('#invite-email').value = '';
     });
@@ -158,20 +174,20 @@
   $('#save-trip').addEventListener('click', () => {
     if (fields.some(field => !field.disabled && !field.reportValidity())) return;
     run(async () => {
-    const start = $('#trip-start').value, end = $('#trip-end').value;
-    if (start && end && end < start) throw new Error('Departure must be on or after arrival.');
-    // Save only edited fields, preserving other people’s changes to unrelated fields.
-    // Successful fields leave the queue; failures retain the remaining edits for retry.
-    for (const [key, value] of [...dirty]) {
-      const own = personal(key);
-      const row = { trip_id: trip.id, key, value, ...(own ? { user_id: user.id } : {}) };
-      const table = own ? 'campwell_personal_fields' : 'campwell_fields';
-      const result = await client.from(table).upsert(row, { onConflict: own ? 'trip_id,user_id,key' : 'trip_id,key' }).select('key');
-      check(result);
-      if (result.data.length !== 1) throw new Error('A field was not saved. Check trip access and retry.');
-      dirty.delete(key);
-    }
-    message('All changes saved to Supabase. Friends can refresh to see shared updates.');
+      const start = $('#trip-start').value, end = $('#trip-end').value;
+      if (start && end && end < start) throw new Error('Departure must be on or after arrival.');
+      // Save only edited fields, preserving other people’s changes to unrelated fields.
+      // Successful fields leave the queue; failures retain the remaining edits for retry.
+      for (const [key, value] of [...dirty]) {
+        const own = personal(key);
+        const row = { trip_id: trip.id, key, value, ...(own ? { user_id: user.id } : {}) };
+        const table = own ? 'campwell_personal_fields' : 'campwell_fields';
+        const result = await client.from(table).upsert(row, { onConflict: own ? 'trip_id,user_id,key' : 'trip_id,key' }).select('key');
+        check(result);
+        if (result.data.length !== 1) throw new Error('A field was not saved. Check trip access and retry.');
+        dirty.delete(key);
+      }
+      message('All changes saved to Supabase. Friends can refresh to see shared updates.');
     });
   });
   $('#refresh-trip').addEventListener('click', () => { if (trip && confirmDiscard()) run(() => loadTrip(trip.id)); });
@@ -181,27 +197,32 @@
   $('#signout').addEventListener('click', () => {
     if (!confirmDiscard()) return;
     run(async () => {
-      check(await client.auth.signOut({ scope: 'local' }));
-      user = null;
-      localMode();
-      $('#shared-account').hidden = true;
-      $('#shared-signin').hidden = false;
-      $('#code-form').hidden = true;
-      $('#trip-select').replaceChildren(new Option('Choose a trip', ''));
-      $('#account-label').textContent = '';
-      message('Signed out. Local planning is available.');
+      const result = await client.auth.signOut({ scope: 'local' });
+      if (result.error) throw result.error;
+      endSession();
     });
   });
   window.addEventListener('beforeunload', event => {
     if (dirty.size) { event.preventDefault(); event.returnValue = ''; }
   });
+  function endSession() {
+    sessionGeneration++;
+    user = null;
+    email = '';
+    localMode();
+    $('#shared-account').hidden = true;
+    $('#shared-signin').hidden = false;
+    $('#code-form').hidden = true;
+    $('#trip-select').replaceChildren(new Option('Choose a trip', ''));
+    $('#account-label').textContent = '';
+    $('#invite-email').value = '';
+    $('#new-trip-name').value = '';
+    $('#join-trip-id').value = '';
+    $('#signin-code').value = '';
+    $('#signin-email').value = '';
+    message('Signed out. Sign in again to access shared trips. Local planning is available.');
+  }
   client.auth.onAuthStateChange(event => {
-    if (event === 'SIGNED_OUT' && user) {
-      user = null;
-      localMode();
-      $('#shared-account').hidden = true;
-      $('#shared-signin').hidden = false;
-      message('Session ended. Sign in again to access shared trips.');
-    }
+    if (event === 'SIGNED_OUT') endSession();
   });
 })();

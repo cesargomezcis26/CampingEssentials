@@ -8,6 +8,12 @@ The static site still works on GitHub Pages. Supabase provides email sign-in and
 
 Open the SQL Editor in project `fjjnmksglgepvxvhxpoc`, paste the complete contents of [setup.sql](setup.sql), and run it once. It creates only new `campwell_*` tables, functions, and policies in a transaction. Do not disable Row Level Security. If an object already exists, stop and inspect it; do not drop existing tables to retry.
 
+### Already created the tables?
+
+Run [migrations/20261103_security_hardening.sql](migrations/20261103_security_hardening.sql) in SQL Editor instead of rerunning setup.sql. The migration preserves your tables and data, refreshes grants, and makes invitation acceptance use the account's current verified email. Anonymous and unverified accounts cannot access the planner even if those sign-in options are accidentally enabled. It is safe to rerun this migration.
+
+Afterward, run [security-check.sql](security-check.sql) and review the actual hosted policies and Storage rules. Extra policies created separately in your project require their own review: permissive policies are combined with OR. Saving these files in GitHub does not apply them to Supabase.
+
 The database stores trip names/owners, invited emails, memberships, and individual form fields. Packing assignments are names entered by the group, not user permissions. Only the organizer controls membership and trip dates/location/group size. Members can edit shared gear. Each person's personal checks are visible only to that account while it remains a member.
 
 ## 2. Configure email sign-in
@@ -59,3 +65,11 @@ Local automated policy checks and browser checks are in `../tests`. Browser chec
 There is no membership-management screen yet. Use Supabase Table Editor (as project administrator) to remove the matching row from `campwell_members`; also remove any pending invitation for that email from `campwell_invitations`. An accepted invitation is consumed, so it cannot be reused after removal. Removing a trip from `campwell_trips` deletes its associated memberships, invitations, and form fields through foreign-key cascades. Take a backup first if needed. Normal website users have no direct trip-delete permission.
 
 Trip dates, names, and invited email addresses are personal information. Keep database/admin access restricted, share only within the group, and delete old trips when no longer needed. Do not store credentials or sensitive documents in checklist text.
+
+## Website security policy
+
+Every page now includes a Content Security Policy and a no-referrer policy. Scripts must come from this website, connections and photos are limited to the configured Supabase host, and only the existing Google Fonts stylesheet/font hosts are allowed. Inline scripts and HTML event handlers are blocked. If you deliberately change the project host or add a third-party widget, review and update the policy in **all three HTML pages** and `_headers`; do not weaken it with `*`, `unsafe-inline`, or `unsafe-eval` to silence an error.
+
+`_headers` adds anti-framing, MIME, permissions, and HTTPS response headers on Netlify/Cloudflare Pages. **GitHub Pages does not apply `_headers`**. The HTML policies still apply there, but `frame-ancestors`, X-Frame-Options, and the other response headers need a hosting provider/proxy that supports custom headers. Enable Enforce HTTPS in GitHub Pages settings. Shared sign-in is disabled on insecure public HTTP origins; localhost development remains supported.
+
+The site has no visitor-upload feature. For the public photo bucket, restrict writes in Supabase Storage policies, limit allowed formats to images you use (for example JPEG/PNG/WebP), set a size limit, and upload only photos intended to be public. Strip location metadata from photos when needed.
