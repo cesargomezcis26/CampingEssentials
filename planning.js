@@ -1,6 +1,7 @@
 const planKey = 'campwell-plan-v1';
 const planStatus = document.querySelector('#planning-status');
 const planFields = [...document.querySelectorAll('[data-save]')];
+const planDefaults = new Map(planFields.map(field => [field.dataset.save, field.type === "checkbox" ? false : field.defaultValue]));
 let savedPlan = {};
 try {
   const stored = JSON.parse(localStorage.getItem(planKey) || '{}');
@@ -15,6 +16,7 @@ planFields.forEach(field => {
     else if (field.type !== 'checkbox' && typeof savedPlan[key] === 'string') field.value = savedPlan[key].slice(0, field.maxLength > 0 ? field.maxLength : 150);
   }
   field.addEventListener('input', () => {
+    if (window.campwellSharedMode) return;
     const values = Object.fromEntries(planFields.map(input => [input.dataset.save, input.type === 'checkbox' ? input.checked : input.value]));
     try { localStorage.setItem(planKey, JSON.stringify(values)); }
     catch { planStatus.textContent = 'Unable to save in this browser. Print a copy before leaving to keep your plan.'; }

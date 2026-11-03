@@ -32,3 +32,6 @@
   margin: 16px;
   border-radius: 4px;
 }
+
+/* Private shared-trip controls */
+.shared-panel{border:1px solid var(--line);border-radius:6px;background:#edf0e5;padding:26px;margin-bottom:28px}.shared-panel h2{font-size:27px}.shared-panel h3{margin-top:25px}.shared-panel [hidden]{display:none!important}.shared-form{display:flex;flex-wrap:wrap;align-items:end;gap:12px;margin-top:18px}.shared-form label{display:flex;flex:1 1 220px;flex-direction:column;gap:7px;font-size:12px}.shared-panel select{width:100%;padding:10px;border:1px solid #cbd1c0;border-radius:4px;background:var(--paper);color:var(--ink);font:inherit}.shared-panel .button{min-height:44px;border:0;cursor:pointer}.shared-actions{display:flex;flex-wrap:wrap;gap:15px;margin-top:20px;align-items:center}.shared-actions button:not(.button){min-height:44px;padding:10px 14px;border:1px solid #b5c0a8;border-radius:4px;background:var(--paper);color:var(--ink);cursor:pointer}#shared-status{font-size:13px;line-height:1.8;overflow-wrap:anywhere}#trip-id-label{overflow-wrap:anywhere}.planning-main input:disabled,.shared-panel button:disabled{opacity:.6;cursor:not-allowed}@media(max-width:650px){.shared-panel{padding:20px}.shared-form .button{width:100%}}@media print{.shared-panel{display:none}}
