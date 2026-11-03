@@ -24,3 +24,11 @@
 @media(max-width:900px){.site-header{align-items:flex-start}.site-header nav{gap:6px 12px}.site-header nav a{font-size:12px}}
 @media(max-width:650px){.site-header{min-height:0;gap:14px;padding-block:20px 16px}.site-header nav{width:100%;display:flex;gap:6px;justify-content:flex-start;border-top:1px solid var(--line);padding-top:12px}.site-header nav a{flex:1 1 auto;font-size:12px;padding:10px 12px;background:#eff0e7;text-align:center}.site-header nav .nav-cta{border:1px solid #cbd1c0}.values-strip .plant-icon svg{width:15px;height:20px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*::before,*::after{transition:none!important;animation:none!important}.button:hover{transform:none}}
+.campsite-photo {
+  display: block;
+  width: calc(100% - 32px);
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  margin: 16px;
+  border-radius: 4px;
+}
