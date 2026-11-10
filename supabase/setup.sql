@@ -71,12 +71,30 @@ create table public.campwell_personal_fields (
   value text not null check (value in ('true','false')),
   primary key (trip_id, user_id, key)
 );
+create table public.campwell_claims (
+  trip_id uuid not null references public.campwell_trips(id) on delete cascade,
+  item_key text not null check (item_key in (
+    'canopy', 'grill', 'tents', 'lights', 'chairs', 'cookware', 'cleaning',
+    'speaker', 'bucket', 'water-dispenser', 'projector', 'hammocks',
+    'inflatable-couch', 'heater', 'food-plan', 'grill-fuel', 'first-aid',
+    'trash-bags', 'drinking-water', 'tableware', 'bug-spray'
+  )),
+  user_id uuid not null references auth.users(id) on delete cascade default auth.uid(),
+  display_name text not null check (
+    display_name = btrim(display_name)
+    and char_length(display_name) between 1 and 60
+  ),
+  claimed_at timestamptz not null default now(),
+  primary key (trip_id, item_key)
+);
+create index campwell_claims_user_id_idx on public.campwell_claims (user_id);
 
 alter table public.campwell_trips enable row level security;
 alter table public.campwell_members enable row level security;
 alter table public.campwell_invitations enable row level security;
 alter table public.campwell_fields enable row level security;
 alter table public.campwell_personal_fields enable row level security;
+alter table public.campwell_claims enable row level security;
 
 create policy trips_read on public.campwell_trips for select to authenticated using (public.campwell_verified_email() is not null and (owner_id = auth.uid() or public.campwell_is_member(id)));
 create policy trips_create on public.campwell_trips for insert to authenticated with check (owner_id = auth.uid() and public.campwell_verified_email() is not null);
@@ -96,6 +114,19 @@ create policy fields_update on public.campwell_fields for update to authenticate
 create policy personal_read on public.campwell_personal_fields for select to authenticated using (user_id = auth.uid() and public.campwell_is_member(trip_id));
 create policy personal_create on public.campwell_personal_fields for insert to authenticated with check (user_id = auth.uid() and public.campwell_is_member(trip_id));
 create policy personal_update on public.campwell_personal_fields for update to authenticated using (user_id = auth.uid() and public.campwell_is_member(trip_id)) with check (user_id = auth.uid() and public.campwell_is_member(trip_id));
+create policy claims_read on public.campwell_claims for select to authenticated
+  using (public.campwell_is_member(trip_id));
+create policy claims_create on public.campwell_claims for insert to authenticated
+  with check (
+    user_id = (select auth.uid())
+    and public.campwell_verified_email() is not null
+    and public.campwell_is_member(trip_id)
+  );
+create policy claims_remove on public.campwell_claims for delete to authenticated
+  using (
+    (user_id = (select auth.uid()) or public.campwell_is_owner(trip_id))
+    and public.campwell_is_member(trip_id)
+  );
 
 -- Knowing a trip ID is insufficient: the signed-in email must be invited.
 create function public.campwell_join_trip(target uuid) returns void
@@ -111,11 +142,12 @@ end;
 $$;
 
 -- Explicit grants: no anonymous data access or broad default table privileges.
-revoke all on public.campwell_trips, public.campwell_members, public.campwell_invitations, public.campwell_fields, public.campwell_personal_fields from public, anon, authenticated;
+revoke all on public.campwell_trips, public.campwell_members, public.campwell_invitations, public.campwell_fields, public.campwell_personal_fields, public.campwell_claims from public, anon, authenticated;
 grant select, insert on public.campwell_trips to authenticated;
 grant select, delete on public.campwell_members to authenticated;
 grant select, insert, delete on public.campwell_invitations to authenticated;
 grant select, insert, update on public.campwell_fields, public.campwell_personal_fields to authenticated;
+grant select, insert, delete on public.campwell_claims to authenticated;
 revoke all on function public.campwell_verified_email(), public.campwell_is_owner(uuid), public.campwell_is_member(uuid), public.campwell_valid_field(text,text), public.campwell_join_trip(uuid) from public, anon;
 grant execute on function public.campwell_verified_email(), public.campwell_is_owner(uuid), public.campwell_is_member(uuid), public.campwell_valid_field(text,text), public.campwell_join_trip(uuid) to authenticated;
 commit;

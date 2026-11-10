@@ -8,6 +8,9 @@ if (!process.env.STARCAMP_SCHEMA_PATH || process.env.STARCAMP_APPLY_HARDENING ==
   // Also exercise the existing-installation upgrade twice: it must preserve data and be repeatable.
   await db.exec(fs.readFileSync(new URL('../supabase/migrations/20261103_security_hardening.sql', import.meta.url),'utf8'));
 }
+if (process.env.STARCAMP_SCHEMA_PATH) {
+  await db.exec(fs.readFileSync(new URL('../supabase/migrations/20261109_shared_claim_board.sql', import.meta.url),'utf8'));
+}
 const owner='11111111-1111-4111-8111-111111111111', friend='22222222-2222-4222-8222-222222222222', outsider='33333333-3333-4333-8333-333333333333';
 await db.exec(`insert into auth.users(id,email,email_confirmed_at) values ('${owner}','owner@example.invalid',now()),('${friend}','friend@example.invalid',now()),('${outsider}','outsider@example.invalid',now());`);
 async function as(id,email){ await db.exec('reset role'); await db.query(`select set_config('request.jwt.claim.sub',$1,false),set_config('request.jwt.claim.email',$2,false)`,[id,email]);await db.exec('set role authenticated'); }
@@ -31,6 +34,16 @@ await db.exec('reset role');
 await db.query("update auth.users set email='friend@example.invalid' where id=$1",[friend]);
 await as(friend,'friend@example.invalid');await db.query('select public.campwell_join_trip($1)',[trip.id]);
 assert.equal((await db.query('select * from public.campwell_trips')).rows.length,1);
+await db.query("insert into public.campwell_claims(trip_id,item_key,user_id,display_name) values ($1,'tents',$2,'Friend')",[trip.id,friend]);
+assert.equal((await db.query('select display_name from public.campwell_claims where trip_id=$1',[trip.id])).rows[0].display_name,'Friend');
+await denied(()=>db.query("insert into public.campwell_claims(trip_id,item_key,user_id,display_name) values ($1,'tents',$2,'Friend again')",[trip.id,friend]),'duplicate item claim rejected atomically');
+await denied(()=>db.query("insert into public.campwell_claims(trip_id,item_key,user_id,display_name) values ($1,'grill',$2,'Impostor')",[trip.id,owner]),'member cannot claim for another user');
+await denied(()=>db.query("update public.campwell_claims set display_name='Changed' where trip_id=$1",[trip.id]),'claims cannot be edited in place');
+await denied(()=>db.query("insert into public.campwell_claims(trip_id,item_key,user_id,display_name) values ($1,'made-up-item',$2,'Friend')",[trip.id,friend]),'unknown claim item rejected');
+await denied(()=>db.query("insert into public.campwell_claims(trip_id,item_key,user_id,display_name) values ($1,'grill',$2,'  Friend  ')",[trip.id,friend]),'untrimmed display name rejected');
+await as(outsider,'outsider@example.invalid');
+assert.equal((await db.query("delete from public.campwell_claims where trip_id=$1 and item_key='tents' returning *",[trip.id])).rows.length,0);
+await as(friend,'friend@example.invalid');
 await db.query("update public.campwell_fields set value='Friend' where trip_id=$1 and key='shared-0-owner'",[trip.id]);
 assert.equal((await db.query("select value from public.campwell_fields where key='shared-0-owner'")).rows[0].value,'Friend');
 assert.equal((await db.query("update public.campwell_fields set value='Hijacked' where key='trip-location' returning *")).rows.length,0);
@@ -41,6 +54,9 @@ await denied(()=>db.query("insert into public.campwell_personal_fields values ($
 await as(owner,'owner@example.invalid');
 assert.equal((await db.query('select * from public.campwell_personal_fields')).rows.length,0);
 assert.equal((await db.query('select * from public.campwell_invitations')).rows.length,0);
+assert.equal((await db.query('select * from public.campwell_claims where trip_id=$1',[trip.id])).rows.length,1);
+await db.query("delete from public.campwell_claims where trip_id=$1 and item_key='tents'",[trip.id]);
+assert.equal((await db.query('select * from public.campwell_claims where trip_id=$1',[trip.id])).rows.length,0);
 await denied(()=>db.query("insert into public.campwell_fields values ($1,'shared-0-quantity','-2')",[trip.id]),'invalid quantity denied');
 await denied(()=>db.query("insert into public.campwell_fields values ($1,'trip-start','2026-02-31')",[trip.id]),'invalid date denied');
 await denied(()=>db.query("insert into public.campwell_fields values ($1,'unknown-key','x')",[trip.id]),'unknown field denied');
@@ -59,6 +75,8 @@ await as(outsider,'outsider@example.invalid');
 const {rows:[otherTrip]}=await db.query("insert into public.campwell_trips(name) values ('Private other trip') returning id");
 await db.query("insert into public.campwell_fields values ($1,'shared-0-owner','Other owner')",[otherTrip.id]);
 await as(friend,'friend@example.invalid');
+await db.query("insert into public.campwell_claims(trip_id,item_key,user_id,display_name) values ($1,'chairs',$2,'Friend')",[trip.id,friend]);
+await denied(()=>db.query("update public.campwell_claims set trip_id=$1 where trip_id=$2",[otherTrip.id,trip.id]),'claim cannot move to another trip');
 await denied(()=>db.query("update public.campwell_fields set trip_id=$1 where trip_id=$2 and key='shared-0-owner'",[otherTrip.id,trip.id]),'cross-trip row reassignment rejected');
 await denied(()=>db.query("update public.campwell_personal_fields set user_id=$1 where trip_id=$2",[owner,trip.id]),'personal record ownership reassignment rejected');
 assert.equal((await db.query('select * from public.campwell_fields where trip_id=$1',[otherTrip.id])).rows.length,0);
@@ -86,18 +104,19 @@ if (!process.env.STARCAMP_SCHEMA_PATH || process.env.STARCAMP_APPLY_HARDENING ==
 await db.query('delete from public.campwell_members where trip_id=$1 and user_id=$2',[trip.id,friend]);
 await as(friend,'friend@example.invalid');
 assert.equal((await db.query('select * from public.campwell_fields')).rows.length,0);
+assert.equal((await db.query('select * from public.campwell_claims')).rows.length,0);
 await denied(()=>db.query('select public.campwell_join_trip($1)',[trip.id]),'consumed invitation cannot restore revoked membership');
 await db.exec('reset role;set role anon');
 await denied(()=>db.query('select * from public.campwell_trips'),'anonymous reads denied');
-for (const table of ['campwell_trips','campwell_members','campwell_invitations','campwell_fields','campwell_personal_fields']) {
+for (const table of ['campwell_trips','campwell_members','campwell_invitations','campwell_fields','campwell_personal_fields','campwell_claims']) {
   await denied(()=>db.query(`select * from public.${table}`),`anonymous reads denied: ${table}`);
   await denied(()=>db.query(`truncate public.${table} cascade`),`anonymous truncate denied: ${table}`);
 }
 await denied(()=>db.query('select public.campwell_verified_email()'),'anonymous identity helper execution denied');
 await denied(()=>db.query('select public.campwell_join_trip($1)',[trip.id]),'anonymous join function execution denied');
 await db.exec('reset role');
-const {rows:tables}=await db.query("select relname,relrowsecurity from pg_class where relname in ('campwell_trips','campwell_members','campwell_invitations','campwell_fields','campwell_personal_fields')");
-assert.equal(tables.length,5);assert(tables.every(t=>t.relrowsecurity));
+const {rows:tables}=await db.query("select relname,relrowsecurity from pg_class where relname in ('campwell_trips','campwell_members','campwell_invitations','campwell_fields','campwell_personal_fields','campwell_claims')");
+assert.equal(tables.length,6);assert(tables.every(t=>t.relrowsecurity));
 await db.exec('create role unrelated_role; set role unrelated_role');
 await denied(()=>db.query('select * from public.campwell_trips'),'PUBLIC does not inherit table access');
 await denied(()=>db.query('select public.campwell_verified_email()'),'PUBLIC does not inherit definer function execution');

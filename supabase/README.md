@@ -10,11 +10,11 @@ Open the SQL Editor in project `fjjnmksglgepvxvhxpoc`, paste the complete conten
 
 ### Already created the tables?
 
-Run [migrations/20261103_security_hardening.sql](migrations/20261103_security_hardening.sql) in SQL Editor instead of rerunning setup.sql. The migration preserves your tables and data, refreshes grants, and makes invitation acceptance use the account's current verified email. Anonymous and unverified accounts cannot access the planner even if those sign-in options are accidentally enabled. It is safe to rerun this migration.
+Run [migrations/20261103_security_hardening.sql](migrations/20261103_security_hardening.sql) in SQL Editor instead of rerunning setup.sql. Then run [migrations/20261109_shared_claim_board.sql](migrations/20261109_shared_claim_board.sql) to add the claim board. Both preserve existing trip data. The hardening migration refreshes grants and makes invitation acceptance use the account's current verified email. Anonymous and unverified accounts cannot access the planner even if those sign-in options are accidentally enabled.
 
 Afterward, run [security-check.sql](security-check.sql) and review the actual hosted policies and Storage rules. Extra policies created separately in your project require their own review: permissive policies are combined with OR. Saving these files in GitHub does not apply them to Supabase.
 
-The database stores trip names/owners, invited emails, memberships, and individual form fields. Packing assignments are names entered by the group, not user permissions. Only the organizer controls membership and trip dates/location/group size. Members can edit shared gear. Each person's personal checks are visible only to that account while it remains a member.
+The database stores trip names/owners, invited emails, memberships, and item claims. A claim records the signed-in account and the display name shown to trip members. The account ID—not the displayed name—controls release permission. Only the claimant or trip organizer can release a claim. A unique database key prevents two people from claiming the same item.
 
 ## 2. Configure email sign-in
 
@@ -38,31 +38,31 @@ Deploy all HTML, CSS, JS, and `vendor/` files together over HTTPS. Use `planning
 
 ## 4. Use a shared trip
 
-1. Enter your email under **Plan with friends**, request a code, then enter the email code.
-2. Create a named private trip. It starts with a fresh checklist; local data is not uploaded automatically. Your previous local plan remains separate.
-3. Add trip details, assignments, quantities, and checks, then click **Save changes**. Only edited fields are written, so unrelated edits by friends are preserved. If two people edit the same field, the last successful save wins. Saves across several fields are not a single transaction: a failed save retains the unsaved fields for retry.
-4. As organizer, enter a friend's email and choose **Allow this email**. Privately send your friend the planning page URL and trip ID. The button adds permission but does not send an invitation email.
-5. Your friend signs in with exactly that email and enters the trip ID to **Accept invitation**. Knowing the ID alone never grants access. Invitations are consumed on acceptance.
-6. Friends open their trip from **Your trips** and use **Refresh updates** to see each other's changes. This version uses manual refresh, not live subscriptions. Unsaved changes require confirmation before switching or refreshing.
-7. **Everyone brings** checks belong to the signed-in person. Other packing groups are shared. **Use local plan** returns to the browser's original local checklist.
-8. Sign out on a shared device. Sessions are kept in memory, not browser localStorage, so a reload requires another sign-in. Local-mode packing data still uses localStorage.
+1. Enter your email on the planning page, request a code, then enter the email code.
+2. Create a named private trip. If you have one trip, it opens automatically. Multiple trips appear as buttons—there are no dropdown controls.
+3. Add the display name friends should see, then choose **I’ll bring it** beside an open item. It moves to **Items we have** with your name.
+4. The claimant can release their item. The organizer can remove any claim when plans change. Claims cannot be edited or reassigned in place.
+5. The board checks Supabase every six seconds while visible and whenever the tab becomes active again.
+6. As organizer, enter a friend's email and choose **Allow email**. Privately send the planning page URL and trip ID. The button records permission but does not send an invitation email.
+7. Your friend signs in with exactly that email and enters the trip ID to join. Knowing the ID alone never grants access. Invitations are consumed on acceptance.
+8. Sign out on a shared device. Sessions are kept in memory, not browser localStorage, so reloading requires another sign-in. The display name is saved locally for convenience but provides no authorization.
 
 ## 5. Verify before sharing real trips
 
 Use separate owner, invited-friend, and unrelated accounts:
 
-- Owner can create a trip, save details, invite a friend, and read shared changes.
-- Invited friend can accept, update shared items, and save their own personal checks. They cannot edit trip details or invite another account.
-- Each account sees only its own personal checks, including when the organizer reads the plan.
+- Owner can create a trip, invite a friend, see all claims, and remove a claim.
+- Invited friend can accept, see all claims, claim an open item, and release only their own claim. They cannot invite another account.
+- Two accounts trying to claim the same item produce one successful claim; the other account receives a conflict and refreshes.
 - Unrelated and signed-out users cannot read or change trip records via the REST API, not just through the UI. Try an uninvited trip ID; acceptance must fail.
-- Owner and friend can edit different fields and save without erasing each other's changes. Failed saves must show errors and preserve unsaved entries.
+- Claim and release actions appear to other signed-in members after the automatic refresh interval.
 - Email code delivery, session expiry/sign-out, and mobile layout work on your deployed HTTPS site.
 
 Local automated policy checks and browser checks are in `../tests`. Browser checks simulate Supabase responses; they do not prove your hosted project is configured. The policy tests execute the real migration in PGlite with a small Supabase-auth shim. Hosted Supabase still needs the checks above. This cloud workspace could not reach the project's Supabase host because the network proxy blocked it.
 
 ## Revoke access or delete a trip
 
-There is no membership-management screen yet. Use Supabase Table Editor (as project administrator) to remove the matching row from `campwell_members`; also remove any pending invitation for that email from `campwell_invitations`. An accepted invitation is consumed, so it cannot be reused after removal. Removing a trip from `campwell_trips` deletes its associated memberships, invitations, and form fields through foreign-key cascades. Take a backup first if needed. Normal website users have no direct trip-delete permission.
+There is no membership-management screen yet. Use Supabase Table Editor (as project administrator) to remove the matching row from `campwell_members`; also remove any pending invitation for that email from `campwell_invitations`. An accepted invitation is consumed, so it cannot be reused after removal. Removing a trip from `campwell_trips` deletes its associated memberships, invitations, claims, and legacy form fields through foreign-key cascades. Take a backup first if needed. Normal website users have no direct trip-delete permission.
 
 Trip dates, names, and invited email addresses are personal information. Keep database/admin access restricted, share only within the group, and delete old trips when no longer needed. Do not store credentials or sensitive documents in checklist text.
 
