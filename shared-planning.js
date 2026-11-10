@@ -20,6 +20,9 @@
     ['trash-bags', 'Trash bags', 'Leave no trace'],
     ['drinking-water', 'Drinking water', 'Camp kitchen'],
     ['tableware', 'Cups, plates & utensils', 'Camp kitchen'],
+    ['napkins', 'Napkins', 'Camp kitchen'],
+    ['sodas', 'Sodas', 'Food & drinks'],
+    ['desserts', 'Desserts', 'Food & drinks'],
     ['bug-spray', 'Bug spray', 'Personal comfort']
   ];
 
@@ -54,6 +57,7 @@
     login.hidden = view !== 'login';
     setup.hidden = view !== 'setup';
     board.hidden = view !== 'board';
+    document.dispatchEvent(new CustomEvent('starcamp:view-changed', { detail: { view } }));
   }
   function setBusy(value) {
     state.busy = value;
@@ -149,6 +153,7 @@
     $('#claimed-count').textContent = String(claimedCount);
     $('#needed-empty').hidden = neededCount !== 0;
     $('#claimed-empty').hidden = claimedCount !== 0;
+    document.dispatchEvent(new CustomEvent('starcamp:board-rendered'));
   }
 
   async function refreshClaims(quiet = false) {

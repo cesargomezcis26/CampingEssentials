@@ -10,7 +10,7 @@ Open the SQL Editor in project `fjjnmksglgepvxvhxpoc`, paste the complete conten
 
 ### Already created the tables?
 
-Run [migrations/20261103_security_hardening.sql](migrations/20261103_security_hardening.sql) in SQL Editor instead of rerunning setup.sql. Then run [migrations/20261109_shared_claim_board.sql](migrations/20261109_shared_claim_board.sql) to add the claim board. Both preserve existing trip data. The hardening migration refreshes grants and makes invitation acceptance use the account's current verified email. Anonymous and unverified accounts cannot access the planner even if those sign-in options are accidentally enabled.
+Run [migrations/20261103_security_hardening.sql](migrations/20261103_security_hardening.sql) in SQL Editor instead of rerunning setup.sql. Then run [migrations/20261109_shared_claim_board.sql](migrations/20261109_shared_claim_board.sql) to add the claim board. If that claim-board migration was already applied before napkins, sodas, and desserts were added, also run [migrations/20261110_add_claim_items.sql](migrations/20261110_add_claim_items.sql). These migrations preserve existing trip data. The hardening migration refreshes grants and makes invitation acceptance use the account's current verified email. Anonymous and unverified accounts cannot access the planner even if those sign-in options are accidentally enabled.
 
 Afterward, run [security-check.sql](security-check.sql) and review the actual hosted policies and Storage rules. Extra policies created separately in your project require their own review: permissive policies are combined with OR. Saving these files in GitHub does not apply them to Supabase.
 

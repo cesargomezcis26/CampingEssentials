@@ -77,6 +77,8 @@ const http = require('node:http');
   await page.route('**/vendor/supabase.js', route => route.fulfill({ contentType: 'text/javascript', body: `${fs.readFileSync(path.join(root, 'vendor/supabase.js'), 'utf8')};{const create=window.supabase.createClient;window.supabase={...window.supabase,createClient:(...args)=>{const client=create(...args);window.__testClient=client;return client;}}}` }));
 
   await page.goto(`${base}/planning.html`);
+  assert.equal(await page.evaluate(() => typeof window.Motion?.animate), 'function');
+  assert(await page.evaluate(() => document.getAnimations().length > 0));
   assert.equal(await page.locator('select').count(), 0);
   assert(await page.locator('#planner-login').isVisible());
 
@@ -97,7 +99,10 @@ const http = require('node:http');
   await page.locator('#claim-board').waitFor({ state: 'visible' });
   assert.equal(await page.locator('#board-title').textContent(), 'Test camp');
   assert.equal(await page.locator('#claimed-items .claim-item').count(), 1);
-  assert.equal(await page.locator('#needed-items .claim-item').count(), 20);
+  assert.equal(await page.locator('#needed-items .claim-item').count(), 23);
+  for (const itemKey of ['napkins', 'sodas', 'desserts']) {
+    assert.equal(await page.locator(`[data-item-key="${itemKey}"]`).count(), 1);
+  }
   assert.equal(await page.locator('#claimed-items img').count(), 0);
   assert((await page.locator('#claimed-items .claim-item p').textContent()).includes('<img src=x'));
 
@@ -142,8 +147,12 @@ const http = require('node:http');
     assert(await page.locator('meta[http-equiv="Content-Security-Policy"]').count());
     assert.equal(await page.locator('meta[name="referrer"]').getAttribute('content'), 'no-referrer');
   }
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.goto(`${base}/index.html`);
+  await page.waitForTimeout(100);
+  assert.equal(await page.evaluate(() => document.getAnimations().length), 0);
   assert.deepEqual(pageErrors, []);
-  console.log('PASS: login gate, automatic trip opening, no dropdowns, safe claim rendering, claim/release flow, sign-out race protection, CSP, and responsive layout.');
+  console.log('PASS: login gate, automatic trip opening, no dropdowns, safe claim rendering, claim/release flow, Motion CSP/reduced-motion behavior, sign-out race protection, and responsive layout.');
 
   await browser.close();
   await new Promise(resolve => server.close(resolve));

@@ -36,13 +36,13 @@ The PostgreSQL-compatible PGlite tests execute the actual setup/migration SQL wi
 - No anonymous table reads, TRUNCATE, or definer-function execution; no inherited PUBLIC access.
 - Both fresh setup and upgrading the original pre-fix schema pass the database regressions. Repeated incremental migration preserves existing private records and restores accidentally disabled RLS.
 
-Chromium tests use the real vendored Supabase SDK with intercepted test API responses. They exercise sign-in, private trip loading, safe rendering, saving only edited fields, failed-save retention/retry, invitations, local fallback, no persisted authentication tokens, sign-out races, CSP enforcement, all three pages under their actual CSP without script errors, working checklist progress, and mobile widths from 320 to 1280px. These are simulated API responses, not a live Supabase integration test.
+Chromium tests use the real vendored Supabase SDK and Motion bundle with intercepted test API responses. They exercise sign-in, private trip loading, safe rendering, invitations, no persisted authentication tokens, sign-out races, CSP enforcement, reduced-motion behavior, all three pages under their actual CSP without script errors, working checklist progress, and mobile widths from 320 to 1280px. These are simulated API responses, not a live Supabase integration test.
 
 Dependency checks completed during this review:
 
 - `npm audit` for the locked test dependencies: zero known advisories reported.
 - `npm audit` for a resolved dependency graph of the pinned Supabase JS 2.118.0 package: zero known advisories reported. This checks registry advisories for the resolved graph, not every implementation detail inside a browser bundle.
-- The committed vendor bundle was compared byte-for-byte with the published npm package, whose tarball integrity was verified against npm metadata.
+- The committed Supabase and Motion vendor bundles were copied from their published npm packages after each tarball's integrity was verified against npm metadata. Versions, sources, integrity values, and licenses are recorded in `vendor/README.md`.
 - A targeted scan of all 39 historical blobs reachable in the available Git history found no high-confidence private-key, Supabase secret/service_role, GitHub-token, Google-OAuth-secret, or password-bearing PostgreSQL-URL matches. Pattern matching cannot rule out arbitrary passwords in other formats. The browser publishable key is intentionally public; there is no reason to rotate it solely because it is visible in the website.
 
 ## Apply the fixes

@@ -77,7 +77,8 @@ create table public.campwell_claims (
     'canopy', 'grill', 'tents', 'lights', 'chairs', 'cookware', 'cleaning',
     'speaker', 'bucket', 'water-dispenser', 'projector', 'hammocks',
     'inflatable-couch', 'heater', 'food-plan', 'grill-fuel', 'first-aid',
-    'trash-bags', 'drinking-water', 'tableware', 'bug-spray'
+    'trash-bags', 'drinking-water', 'tableware', 'napkins', 'sodas',
+    'desserts', 'bug-spray'
   )),
   user_id uuid not null references auth.users(id) on delete cascade default auth.uid(),
   display_name text not null check (

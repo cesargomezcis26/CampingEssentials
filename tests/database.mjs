@@ -11,6 +11,7 @@ if (!process.env.STARCAMP_SCHEMA_PATH || process.env.STARCAMP_APPLY_HARDENING ==
 if (process.env.STARCAMP_SCHEMA_PATH) {
   await db.exec(fs.readFileSync(new URL('../supabase/migrations/20261109_shared_claim_board.sql', import.meta.url),'utf8'));
 }
+await db.exec(fs.readFileSync(new URL('../supabase/migrations/20261110_add_claim_items.sql', import.meta.url),'utf8'));
 const owner='11111111-1111-4111-8111-111111111111', friend='22222222-2222-4222-8222-222222222222', outsider='33333333-3333-4333-8333-333333333333';
 await db.exec(`insert into auth.users(id,email,email_confirmed_at) values ('${owner}','owner@example.invalid',now()),('${friend}','friend@example.invalid',now()),('${outsider}','outsider@example.invalid',now());`);
 async function as(id,email){ await db.exec('reset role'); await db.query(`select set_config('request.jwt.claim.sub',$1,false),set_config('request.jwt.claim.email',$2,false)`,[id,email]);await db.exec('set role authenticated'); }
@@ -34,6 +35,8 @@ await db.exec('reset role');
 await db.query("update auth.users set email='friend@example.invalid' where id=$1",[friend]);
 await as(friend,'friend@example.invalid');await db.query('select public.campwell_join_trip($1)',[trip.id]);
 assert.equal((await db.query('select * from public.campwell_trips')).rows.length,1);
+await db.query("insert into public.campwell_claims(trip_id,item_key,user_id,display_name) values ($1,'napkins',$2,'Friend')",[trip.id,friend]);
+assert.equal((await db.query("delete from public.campwell_claims where trip_id=$1 and item_key='napkins' returning item_key",[trip.id])).rows[0].item_key,'napkins');
 await db.query("insert into public.campwell_claims(trip_id,item_key,user_id,display_name) values ($1,'tents',$2,'Friend')",[trip.id,friend]);
 assert.equal((await db.query('select display_name from public.campwell_claims where trip_id=$1',[trip.id])).rows[0].display_name,'Friend');
 await denied(()=>db.query("insert into public.campwell_claims(trip_id,item_key,user_id,display_name) values ($1,'tents',$2,'Friend again')",[trip.id,friend]),'duplicate item claim rejected atomically');
