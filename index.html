@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' https://fjjnmksglgepvxvhxpoc.supabase.co; connect-src 'self' https://fjjnmksglgepvxvhxpoc.supabase.co; base-uri 'none'; form-action 'none'; object-src 'none'; frame-src 'none'">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' https://fjjnmksglgepvxvhxpoc.supabase.co; media-src 'self' https://fjjnmksglgepvxvhxpoc.supabase.co; connect-src 'self' https://fjjnmksglgepvxvhxpoc.supabase.co; base-uri 'none'; form-action 'none'; object-src 'none'; frame-src 'none'">
   <meta name="referrer" content="no-referrer">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="A practical camping checklist and field-tested tips for your next night outside.">
@@ -10,6 +10,8 @@
   <link rel="stylesheet" href="style.css">
   <script src="vendor/motion.js" defer></script>
   <script src="script.js" defer></script>
+  <script src="hero-video-config.js" defer></script>
+  <script src="hero-video.js" defer></script>
   <script src="motion-effects.js" defer></script>
 </head>
 <body>
@@ -21,7 +23,7 @@
     <section class="hero wrap">
       <div class="hero-copy"><p class="eyebrow"><span></span> LESS GUESSWORK. MORE FRESH AIR.</p><h1>A little preparation.<br>A lot of <em>outside.</em></h1><p class="intro">Good trips start with the essentials. Get your gear together, pick up a few tips, and make yourself at home in the great outdoors.</p><a class="button" href="#checklist">Pack for your next adventure <span aria-hidden="true">↗</span></a><div class="hero-footnote"><span class="plant-icon" aria-hidden="true"><svg viewBox="0 0 24 28" focusable="false"><path d="M12 1 5 10h4l-6 8h6l-5 6h7v3h2v-3h7l-5-6h6l-6-8h4Z" fill="currentColor"/></svg></span> Made for first-timers. Handy for old hands.</div></div>
       <div class="hero-art" role="img" aria-label="Illustration of a tent beneath mountains and a sun in a peaceful pine forest">
-        <svg viewBox="0 0 600 550" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><pattern id="grain" width="6" height="6" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r=".6" fill="#344f3d" opacity=".12"/></pattern></defs><path fill="#e5e9d9" d="M0 0h600v550H0z"/><circle cx="437" cy="125" r="58" fill="#e6ad69"/><path d="m0 320 156-191 91 116 75-102 203 216H0" fill="#9aa995"/><path d="m99 199 57-70 53 67-39-15-18 18-19-16Z" fill="#f1f0df"/><path d="m265 220 57-77 71 76-48-18-20 15-19-20Z" fill="#f1f0df"/><path d="M0 356q154-106 301 2t299-32v224H0" fill="#728b70"/><path d="M0 428q137-110 326-20t274-40v182H0" fill="#405f49"/><g fill="#254837"><path d="m72 215-55 124h30l-40 70h132l-42-70h29Z"/><path d="m532 196-51 126h25l-40 81h138l-43-81h24Z"/><path d="m469 282-35 86h19l-29 57h92l-29-57h17Z"/></g><path d="M0 498q228-70 600-17v69H0Z" fill="#2b4938"/><path d="m136 449 131-166 142 166Z" fill="#e8ac6c"/><path d="m267 283 142 166h90L320 294Z" fill="#c78347"/><path d="m267 321-81 128h160Z" fill="#344a38"/><path d="m267 321 4 128h75Z" fill="#1f352b"/><path d="m136 449-27 21m300-21 30 20m60-20 20 15" stroke="#f2dfba" stroke-width="2"/><path d="M0 0h600v550H0z" fill="url(#grain)"/><g stroke="#f0ebd8" fill="none" stroke-width="2"><path d="m383 94 8-3 8 3m-40-16 7-3 7 3"/></g></svg>
+        <svg class="hero-fallback" viewBox="0 0 600 550" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs><pattern id="grain" width="6" height="6" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r=".6" fill="#344f3d" opacity=".12"/></pattern></defs><path fill="#e5e9d9" d="M0 0h600v550H0z"/><circle cx="437" cy="125" r="58" fill="#e6ad69"/><path d="m0 320 156-191 91 116 75-102 203 216H0" fill="#9aa995"/><path d="m99 199 57-70 53 67-39-15-18 18-19-16Z" fill="#f1f0df"/><path d="m265 220 57-77 71 76-48-18-20 15-19-20Z" fill="#f1f0df"/><path d="M0 356q154-106 301 2t299-32v224H0" fill="#728b70"/><path d="M0 428q137-110 326-20t274-40v182H0" fill="#405f49"/><g fill="#254837"><path d="m72 215-55 124h30l-40 70h132l-42-70h29Z"/><path d="m532 196-51 126h25l-40 81h138l-43-81h24Z"/><path d="m469 282-35 86h19l-29 57h92l-29-57h17Z"/></g><path d="M0 498q228-70 600-17v69H0Z" fill="#2b4938"/><path d="m136 449 131-166 142 166Z" fill="#e8ac6c"/><path d="m267 283 142 166h90L320 294Z" fill="#c78347"/><path d="m267 321-81 128h160Z" fill="#344a38"/><path d="m267 321 4 128h75Z" fill="#1f352b"/><path d="m136 449-27 21m300-21 30 20m60-20 20 15" stroke="#f2dfba" stroke-width="2"/><path d="M0 0h600v550H0z" fill="url(#grain)"/><g stroke="#f0ebd8" fill="none" stroke-width="2"><path d="m383 94 8-3 8 3m-40-16 7-3 7 3"/></g></svg>
         <span class="art-tag">YOUR NEXT CHAPTER IS OUT HERE.</span><span class="art-coordinate">45°31′ N &nbsp; 122°40′ W</span>
       </div>
     </section>

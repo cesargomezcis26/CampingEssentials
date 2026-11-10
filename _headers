@@ -1,6 +1,6 @@
 # Supported by Netlify / Cloudflare Pages; GitHub Pages ignores this file.
 /*
-  Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' https://fjjnmksglgepvxvhxpoc.supabase.co; connect-src 'self' https://fjjnmksglgepvxvhxpoc.supabase.co; base-uri 'none'; form-action 'none'; object-src 'none'; frame-src 'none'; frame-ancestors 'none'
+  Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' https://fjjnmksglgepvxvhxpoc.supabase.co; media-src 'self' https://fjjnmksglgepvxvhxpoc.supabase.co; connect-src 'self' https://fjjnmksglgepvxvhxpoc.supabase.co; base-uri 'none'; form-action 'none'; object-src 'none'; frame-src 'none'; frame-ancestors 'none'
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
   Referrer-Policy: no-referrer

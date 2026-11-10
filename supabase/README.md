@@ -36,6 +36,8 @@ The Supabase browser SDK is pinned and vendored in `../vendor/`; no runtime CDN 
 
 Deploy all HTML, CSS, JS, and `vendor/` files together over HTTPS. Use `planning.html` to test. Do not use a development filesystem path as a public URL.
 
+For the optional homepage background video, paste the direct public MP4 object URL into `../hero-video-config.js`. Use the Storage object URL that begins with the project host, not a `supabase.com/dashboard/...` preview link. The illustration remains as a fallback when the URL is blank, playback fails, the visitor requests reduced motion, or data-saving mode is enabled. An optional poster image can use a same-site or project Storage URL.
+
 ## 4. Use a shared trip
 
 1. Enter your email on the planning page, request a code, then enter the email code.

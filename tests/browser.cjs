@@ -146,11 +146,21 @@ const http = require('node:http');
     assert((await page.title()).includes('Starcamp'));
     assert(await page.locator('meta[http-equiv="Content-Security-Policy"]').count());
     assert.equal(await page.locator('meta[name="referrer"]').getAttribute('content'), 'no-referrer');
+    if (file === 'index.html') {
+      assert((await page.locator('meta[http-equiv="Content-Security-Policy"]').getAttribute('content')).includes("media-src 'self' https://fjjnmksglgepvxvhxpoc.supabase.co"));
+      assert.equal(await page.locator('.hero-video').count(), 0);
+      assert(await page.locator('.hero-fallback').isVisible());
+    }
   }
+  await page.route('**/hero-video-config.js', route => route.fulfill({
+    contentType: 'text/javascript',
+    body: "window.STARCAMP_HERO_VIDEO={src:'https://fjjnmksglgepvxvhxpoc.supabase.co/storage/v1/object/public/campsitePictures/Campsite_Videos/test.mp4'}"
+  }));
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto(`${base}/index.html`);
   await page.waitForTimeout(100);
   assert.equal(await page.evaluate(() => document.getAnimations().length), 0);
+  assert.equal(await page.locator('.hero-video').count(), 0);
   assert.deepEqual(pageErrors, []);
   console.log('PASS: login gate, automatic trip opening, no dropdowns, safe claim rendering, claim/release flow, Motion CSP/reduced-motion behavior, sign-out race protection, and responsive layout.');
 
